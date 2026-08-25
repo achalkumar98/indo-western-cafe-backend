@@ -1,12 +1,26 @@
 const mongoose = require("mongoose");
 
+const CATEGORIES = [
+  "Beverages",
+  "Starters",
+  "Mains",
+  "Desserts",
+  "Egg",
+  "Dal",
+  "Rice",
+  "Roti",
+  "Naan",
+  "Biryani",
+  "Salads",
+];
+
 const menuItemSchema = new mongoose.Schema(
   {
     category: {
       type: String,
       required: true,
       trim: true,
-      enum: ["Beverages", "Starters", "Mains", "Desserts"],
+      enum: CATEGORIES,
     },
     name: { type: String, required: true, trim: true, maxlength: 100 },
     price: { type: Number, required: true, min: 0 },
@@ -22,3 +36,4 @@ const menuItemSchema = new mongoose.Schema(
 menuItemSchema.index({ category: 1, sortOrder: 1 });
 
 module.exports = mongoose.model("MenuItem", menuItemSchema);
+module.exports.CATEGORIES = CATEGORIES;

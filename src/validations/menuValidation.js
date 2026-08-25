@@ -1,6 +1,18 @@
 const Joi = require("joi");
 
-const categories = ["Beverages", "Starters", "Mains", "Desserts"];
+const categories = [
+  "Beverages",
+  "Starters",
+  "Mains",
+  "Desserts",
+  "Egg",
+  "Dal",
+  "Rice",
+  "Roti",
+  "Naan",
+  "Biryani",
+  "Salads",
+];
 
 const menuItemSchema = Joi.object({
   category: Joi.string()
@@ -32,4 +44,4 @@ const idParamSchema = Joi.object({
     .messages({ "string.hex": "Invalid id", "string.length": "Invalid id" }),
 });
 
-module.exports = { menuItemSchema, menuItemUpdateSchema, idParamSchema };
+module.exports = { menuItemSchema, menuItemUpdateSchema, idParamSchema, categories };
