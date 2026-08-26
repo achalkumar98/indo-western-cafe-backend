@@ -1,5 +1,8 @@
 const Joi = require("joi");
 
+// 12-slot hourly array for one day (11 AM – 10 PM)
+const hourlySlots = Joi.array().items(Joi.number().min(0).max(100)).length(12);
+
 const settingsUpdateSchema = Joi.object({
   phone: Joi.string()
     .trim()
@@ -18,6 +21,17 @@ const settingsUpdateSchema = Joi.object({
   highlights: Joi.array().items(Joi.string().trim().max(60)).max(10),
   rating: Joi.number().min(0).max(5),
   reviewCount: Joi.number().integer().min(0),
+  reviewSummary: Joi.string().trim().max(600).allow(""),
+  reportedByCount: Joi.number().integer().min(0),
+  popularTimes: Joi.object({
+    Mon: hourlySlots,
+    Tue: hourlySlots,
+    Wed: hourlySlots,
+    Thu: hourlySlots,
+    Fri: hourlySlots,
+    Sat: hourlySlots,
+    Sun: hourlySlots,
+  }),
 }).min(1);
 
 const idParamSchema = Joi.object({

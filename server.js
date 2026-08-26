@@ -17,6 +17,7 @@ const reviewRoutes = require("./src/routes/reviews");
 const menuRoutes = require("./src/routes/menu");
 const bannerRoutes = require("./src/routes/banners");
 const settingsRoutes = require("./src/routes/settings");
+const galleryRoutes = require("./src/routes/gallery");
 const statsRoutes = require("./src/routes/stats");
 const adminUserRoutes = require("./src/routes/adminUsers");
 
@@ -66,6 +67,7 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/menu", menuRoutes);
 app.use("/api/banners", bannerRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/gallery", galleryRoutes);
 
 // ─── Admin routes ─────────────────────────────────────────────────────────────
 app.use("/api/admin/stats", statsRoutes);
