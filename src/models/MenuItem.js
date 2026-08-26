@@ -28,6 +28,9 @@ const menuItemSchema = new mongoose.Schema(
     signature: { type: Boolean, default: false },
     available: { type: Boolean, default: true },
     sortOrder: { type: Number, default: 0 },
+    // Optional photo shown on the public menu card. Store a full HTTPS URL
+    // (e.g. Unsplash, Cloudinary, S3) — no file uploads handled by this API.
+    imageUrl: { type: String, trim: true, default: "" },
   },
   { timestamps: true }
 );

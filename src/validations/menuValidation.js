@@ -24,6 +24,7 @@ const menuItemSchema = Joi.object({
   signature: Joi.boolean(),
   available: Joi.boolean(),
   sortOrder: Joi.number().integer().min(0),
+  imageUrl: Joi.string().trim().uri().allow(""),
 });
 
 const menuItemUpdateSchema = Joi.object({
@@ -34,6 +35,7 @@ const menuItemUpdateSchema = Joi.object({
   signature: Joi.boolean(),
   available: Joi.boolean(),
   sortOrder: Joi.number().integer().min(0),
+  imageUrl: Joi.string().trim().uri().allow(""),
 }).min(1);
 
 const idParamSchema = Joi.object({

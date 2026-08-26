@@ -44,6 +44,10 @@ const spec = swaggerJsdoc({
             signature: { type: "boolean", example: true },
             available: { type: "boolean", example: true },
             sortOrder: { type: "integer", example: 0 },
+            imageUrl: {
+              type: "string",
+              example: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=600&q=80",
+            },
             createdAt: { type: "string", format: "date-time" },
           },
         },
