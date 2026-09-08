@@ -94,7 +94,10 @@ const spec = swaggerJsdoc({
     },
   },
   // Forward slashes required — swagger-jsdoc's glob fails on Windows backslashes.
-  apis: [path.join(__dirname, "../routes/*.js").replace(/\\/g, "/")],
+  apis: [
+    path.join(__dirname, '../routes/v1/*.js').replace(/\\/g, '/'),
+    path.join(__dirname, '../routes/*.js').replace(/\\/g, '/'),
+  ],
 });
 
 module.exports = spec;

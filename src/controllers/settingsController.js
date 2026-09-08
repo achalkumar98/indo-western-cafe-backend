@@ -1,8 +1,7 @@
-const asyncHandler = require("../middleware/asyncHandler");
-const settingsService = require("../services/settingsService");
+const httpStatus = require('http-status');
+const catchAsync = require('../utils/catchAsync');
+const settingsService = require('../services/settingsService');
 
-// Mongoose Map serialises to an object fine in JSON, but explicitly convert
-// so the frontend always gets a plain { Mon: [...], Tue: [...] } shape.
 function serialise(settings) {
   const obj = settings.toObject({ virtuals: false });
   if (obj.popularTimes instanceof Map) {
@@ -13,16 +12,14 @@ function serialise(settings) {
   return obj;
 }
 
-// GET /api/settings (public)
-const getSettings = asyncHandler(async (req, res) => {
+const getSettings = catchAsync(async (req, res) => {
   const data = await settingsService.getSettings();
-  res.json({ success: true, data: serialise(data) });
+  res.status(httpStatus.OK).json({ success: true, data: serialise(data) });
 });
 
-// PATCH /api/admin/settings (admin)
-const updateSettings = asyncHandler(async (req, res) => {
+const updateSettings = catchAsync(async (req, res) => {
   const data = await settingsService.updateSettings(req.body);
-  res.json({ success: true, message: "Settings updated", data: serialise(data) });
+  res.status(httpStatus.OK).json({ success: true, message: 'Settings updated', data: serialise(data) });
 });
 
 module.exports = { getSettings, updateSettings };

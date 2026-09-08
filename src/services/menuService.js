@@ -1,15 +1,9 @@
-const MenuItem = require("../models/MenuItem");
+const httpStatus = require('http-status');
+const ApiError = require('../utils/ApiError');
+const { MenuItem } = require('../models');
 
-const notFound = () => {
-  const err = new Error("Menu item not found");
-  err.statusCode = 404;
-  return err;
-};
-
-// Public: all available items grouped by category.
 const listPublic = async () => {
   const items = await MenuItem.find({ available: true }).sort({ category: 1, sortOrder: 1, createdAt: 1 });
-  // Group into { category, items[] } shape for the frontend
   const groups = [];
   const map = new Map();
   for (const item of items) {
@@ -23,7 +17,6 @@ const listPublic = async () => {
   return groups;
 };
 
-// Admin: all items flat with optional category filter.
 const listAll = async ({ category } = {}) => {
   const query = category ? { category } : {};
   return MenuItem.find(query).sort({ category: 1, sortOrder: 1, createdAt: 1 });
@@ -33,13 +26,17 @@ const create = (payload) => MenuItem.create(payload);
 
 const update = async (id, payload) => {
   const item = await MenuItem.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
-  if (!item) {throw notFound();}
+  if (!item) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Menu item not found');
+  }
   return item;
 };
 
 const remove = async (id) => {
   const item = await MenuItem.findByIdAndDelete(id);
-  if (!item) {throw notFound();}
+  if (!item) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Menu item not found');
+  }
   return item;
 };
 

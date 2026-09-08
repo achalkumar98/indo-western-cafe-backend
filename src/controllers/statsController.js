@@ -1,16 +1,15 @@
-const asyncHandler = require("../middleware/asyncHandler");
-const statsService = require("../services/statsService");
+const httpStatus = require('http-status');
+const catchAsync = require('../utils/catchAsync');
+const statsService = require('../services/statsService');
 
-// GET /api/admin/stats/summary
-const getSummary = asyncHandler(async (req, res) => {
+const getSummary = catchAsync(async (req, res) => {
   const data = await statsService.getSummary();
-  res.json({ success: true, data });
+  res.status(httpStatus.OK).json({ success: true, data });
 });
 
-// GET /api/admin/stats/trends?months=6
-const getTrends = asyncHandler(async (req, res) => {
+const getTrends = catchAsync(async (req, res) => {
   const data = await statsService.getTrends(req.query.months);
-  res.json({ success: true, data });
+  res.status(httpStatus.OK).json({ success: true, data });
 });
 
 module.exports = { getSummary, getTrends };

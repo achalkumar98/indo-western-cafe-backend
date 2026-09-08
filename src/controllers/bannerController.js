@@ -1,36 +1,32 @@
-const asyncHandler = require("../middleware/asyncHandler");
-const bannerService = require("../services/bannerService");
-const logger = require("../utils/logger");
+const httpStatus = require('http-status');
+const catchAsync = require('../utils/catchAsync');
+const bannerService = require('../services/bannerService');
+const logger = require('../config/logger');
 
-// GET /api/banners/active (public)
-const getActive = asyncHandler(async (req, res) => {
+const getActive = catchAsync(async (req, res) => {
   const banner = await bannerService.getActive();
-  res.json({ success: true, data: banner || null });
+  res.status(httpStatus.OK).json({ success: true, data: banner || null });
 });
 
-// GET /api/admin/banners (admin)
-const listAll = asyncHandler(async (req, res) => {
+const listAll = catchAsync(async (req, res) => {
   const data = await bannerService.listAll();
-  res.json({ success: true, count: data.length, data });
+  res.status(httpStatus.OK).json({ success: true, count: data.length, data });
 });
 
-// POST /api/admin/banners (admin)
-const create = asyncHandler(async (req, res) => {
+const create = catchAsync(async (req, res) => {
   const banner = await bannerService.create(req.body);
   logger.info(`Banner created: ${banner.title}`);
-  res.status(201).json({ success: true, message: "Banner created", data: banner });
+  res.status(httpStatus.CREATED).json({ success: true, message: 'Banner created', data: banner });
 });
 
-// PUT /api/admin/banners/:id (admin)
-const update = asyncHandler(async (req, res) => {
+const update = catchAsync(async (req, res) => {
   const banner = await bannerService.update(req.params.id, req.body);
-  res.json({ success: true, message: "Banner updated", data: banner });
+  res.status(httpStatus.OK).json({ success: true, message: 'Banner updated', data: banner });
 });
 
-// DELETE /api/admin/banners/:id (admin)
-const remove = asyncHandler(async (req, res) => {
+const remove = catchAsync(async (req, res) => {
   await bannerService.remove(req.params.id);
-  res.json({ success: true, message: "Banner deleted" });
+  res.status(httpStatus.OK).json({ success: true, message: 'Banner deleted' });
 });
 
 module.exports = { getActive, listAll, create, update, remove };

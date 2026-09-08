@@ -12,10 +12,7 @@
 require("dotenv").config({ path: require("path").join(__dirname, "../../.env") });
 
 const mongoose = require("mongoose");
-const MenuItem = require("../models/MenuItem");
-const Banner = require("../models/Banner");
-const Settings = require("../models/Settings");
-const GalleryItem = require("../models/GalleryItem");
+const { MenuItem, Banner, Settings, GalleryItem } = require('../models');
 
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/indo-western";
 

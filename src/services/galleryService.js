@@ -1,27 +1,17 @@
-const GalleryItem = require("../models/GalleryItem");
+const httpStatus = require('http-status');
+const ApiError = require('../utils/ApiError');
+const { GalleryItem } = require('../models');
 
-const notFound = () => {
-  const err = new Error("Gallery item not found");
-  err.statusCode = 404;
-  return err;
-};
+const listPublic = () => GalleryItem.find({ visible: true }).sort({ sortOrder: 1, createdAt: 1 });
 
-// Public: visible items sorted by sortOrder
-const listPublic = () =>
-  GalleryItem.find({ visible: true }).sort({ sortOrder: 1, createdAt: 1 });
-
-// Admin: all items
 const listAll = () => GalleryItem.find().sort({ sortOrder: 1, createdAt: 1 });
 
 const create = (payload) => GalleryItem.create(payload);
 
 const update = async (id, payload) => {
-  const item = await GalleryItem.findByIdAndUpdate(id, payload, {
-    new: true,
-    runValidators: true,
-  });
+  const item = await GalleryItem.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
   if (!item) {
-    throw notFound();
+    throw new ApiError(httpStatus.NOT_FOUND, 'Gallery item not found');
   }
   return item;
 };
@@ -29,7 +19,7 @@ const update = async (id, payload) => {
 const remove = async (id) => {
   const item = await GalleryItem.findByIdAndDelete(id);
   if (!item) {
-    throw notFound();
+    throw new ApiError(httpStatus.NOT_FOUND, 'Gallery item not found');
   }
   return item;
 };

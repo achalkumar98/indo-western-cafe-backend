@@ -1,24 +1,22 @@
-const asyncHandler = require("../middleware/asyncHandler");
-const authService = require("../services/authService");
-const logger = require("../utils/logger");
+const httpStatus = require('http-status');
+const catchAsync = require('../utils/catchAsync');
+const authService = require('../services/authService');
+const logger = require('../config/logger');
 
-// POST /api/auth/register
-const register = asyncHandler(async (req, res) => {
+const register = catchAsync(async (req, res) => {
   const result = await authService.register(req.body);
   logger.info(`Admin registered: ${result.user.username}`);
-  res.status(201).json({ success: true, ...result });
+  res.status(httpStatus.CREATED).json({ success: true, ...result });
 });
 
-// POST /api/auth/login
-const login = asyncHandler(async (req, res) => {
+const login = catchAsync(async (req, res) => {
   const result = await authService.login(req.body);
   logger.info(`Admin login: ${result.user.username}`);
-  res.json({ success: true, ...result });
+  res.status(httpStatus.OK).json({ success: true, ...result });
 });
 
-// GET /api/auth/me
-const me = asyncHandler(async (req, res) => {
-  res.json({ success: true, user: req.admin });
+const me = catchAsync(async (req, res) => {
+  res.status(httpStatus.OK).json({ success: true, user: req.admin });
 });
 
 module.exports = { register, login, me };

@@ -1,21 +1,20 @@
-const Reservation = require("../models/Reservation");
-
-const notFound = () => {
-  const err = new Error("Reservation not found");
-  err.statusCode = 404;
-  return err;
-};
+const httpStatus = require('http-status');
+const ApiError = require('../utils/ApiError');
+const { Reservation } = require('../models');
 
 const create = (payload) => Reservation.create(payload);
 
-const list = async ({ status, search, page = 1, limit = 20, sort = "-createdAt" } = {}) => {
+const list = async ({ status, search, page = 1, limit = 20, sort = '-createdAt' } = {}) => {
   const query = {};
-  if (status && status !== "all") {query.status = status;}
+  if (status && status !== 'all') {
+    query.status = status;
+  }
   if (search) {
     query.$or = [
-      { name: { $regex: search, $options: "i" } },
-      { phone: { $regex: search, $options: "i" } },
-      { email: { $regex: search, $options: "i" } },
+      { firstName: { $regex: search, $options: 'i' } },
+      { lastName: { $regex: search, $options: 'i' } },
+      { customerMobileNumber: { $regex: search, $options: 'i' } },
+      { email: { $regex: search, $options: 'i' } },
     ];
   }
 
@@ -39,13 +38,17 @@ const updateStatus = async (id, status) => {
     { status },
     { new: true, runValidators: true }
   );
-  if (!reservation) {throw notFound();}
+  if (!reservation) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Reservation not found');
+  }
   return reservation;
 };
 
 const remove = async (id) => {
   const reservation = await Reservation.findByIdAndDelete(id);
-  if (!reservation) {throw notFound();}
+  if (!reservation) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Reservation not found');
+  }
   return reservation;
 };
 
