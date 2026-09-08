@@ -1,4 +1,3 @@
-const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const { GalleryItem } = require('../models');
 
@@ -11,7 +10,7 @@ const create = (payload) => GalleryItem.create(payload);
 const update = async (id, payload) => {
   const item = await GalleryItem.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
   if (!item) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Gallery item not found');
+    throw new ApiError(404, 'Gallery item not found');
   }
   return item;
 };
@@ -19,7 +18,7 @@ const update = async (id, payload) => {
 const remove = async (id) => {
   const item = await GalleryItem.findByIdAndDelete(id);
   if (!item) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Gallery item not found');
+    throw new ApiError(404, 'Gallery item not found');
   }
   return item;
 };

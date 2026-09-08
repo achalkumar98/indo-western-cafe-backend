@@ -1,37 +1,32 @@
 const express = require('express');
-const { protect } = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
+const { protect } = require('../../middlewares/auth');
 const { settingsValidation } = require('../../validations');
 const { settingsController } = require('../../controllers');
 
 const router = express.Router();
 
+router.get('/', settingsController.getSettings);
+router.patch('/admin', protect, validate({ body: settingsValidation.settingsUpdateSchema }), settingsController.updateSettings);
+
+module.exports = router;
+
 /**
  * @swagger
  * tags:
- *   - name: Settings
- *     description: >
- *       Restaurant operational settings — singleton document that powers the
- *       entire public site: phone, address, opening hours, pricing, social
- *       links, highlights, popular times chart, and the overview text.
+ *   name: Settings
+ *   description: Restaurant contact and operational settings
  */
 
 /**
  * @swagger
  * /settings:
  *   get:
- *     summary: Get all public restaurant settings (public)
- *     description: >
- *       Returns the singleton settings document. If no document exists yet,
- *       one is created with the schema defaults automatically.
- *
- *       Consumed by every section of the public site — Hero, Overview,
- *       Footer, ActionBar, PopularTimes, and Booking page all read from
- *       this endpoint.
+ *     summary: Get public restaurant settings (public)
  *     tags: [Settings]
  *     responses:
- *       200:
- *         description: Full settings object
+ *       "200":
+ *         description: Settings object
  *         content:
  *           application/json:
  *             schema:
@@ -39,28 +34,30 @@ const router = express.Router();
  *               properties:
  *                 success:
  *                   type: boolean
- *                   example: true
  *                 data:
- *                   $ref: '#/components/schemas/Settings'
+ *                   type: object
+ *                   properties:
+ *                     phone:
+ *                       type: string
+ *                     address:
+ *                       type: string
+ *                     closesAt:
+ *                       type: string
+ *                     isOpenNow:
+ *                       type: boolean
+ *                     priceRange:
+ *                       type: string
+ *                     rating:
+ *                       type: number
+ *                     reviewCount:
+ *                       type: integer
  */
-router.get('/', settingsController.getSettings);
 
 /**
  * @swagger
  * /settings/admin:
  *   patch:
- *     summary: Update restaurant settings — partial update (admin)
- *     description: >
- *       Partial update — only the fields supplied are changed. All fields are
- *       optional; at least one must be present.
- *
- *       **`popularTimes`** accepts a partial day map — you can update a single
- *       day without supplying all 7:
- *       ```json
- *       { "popularTimes": { "Sat": [20,32,40,58,82,95,90,75,55,40,28,14] } }
- *       ```
- *       Each day's value is a 12-element array representing hourly busyness
- *       (0–100) from 11 AM to 10 PM.
+ *     summary: Update restaurant settings (admin)
  *     tags: [Settings]
  *     security:
  *       - bearerAuth: []
@@ -69,32 +66,32 @@ router.get('/', settingsController.getSettings);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/SettingsUpdateInput'
- *     responses:
- *       200:
- *         description: Settings updated
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
+ *             type: object
+ *             properties:
+ *               phone:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               closesAt:
+ *                 type: string
+ *                 example: "10:00 PM"
+ *               isOpenNow:
+ *                 type: boolean
+ *               priceRange:
+ *                 type: string
+ *               rating:
+ *                 type: number
+ *               reviewCount:
+ *                 type: integer
+ *               highlights:
+ *                 type: array
+ *                 items:
  *                   type: string
- *                   example: Settings updated
- *                 data:
- *                   $ref: '#/components/schemas/Settings'
- *       400:
- *         $ref: '#/components/responses/ValidationError'
- *       401:
+ *     responses:
+ *       "200":
+ *         description: Settings updated
+ *       "400":
+ *         $ref: '#/components/responses/BadRequest'
+ *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  */
-router.patch(
-  '/admin',
-  protect,
-  validate({ body: settingsValidation.settingsUpdateSchema }),
-  settingsController.updateSettings
-);
-
-module.exports = router;

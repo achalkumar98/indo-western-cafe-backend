@@ -1,57 +1,78 @@
 const express = require('express');
-const { protect } = require('../../middlewares/auth');
-const { formLimiter } = require('../../middlewares/rateLimiter');
 const validate = require('../../middlewares/validate');
+const { formLimiter } = require('../../middlewares/rateLimiter');
+const { protect } = require('../../middlewares/auth');
 const { reservationValidation } = require('../../validations');
 const { reservationController } = require('../../controllers');
 
 const router = express.Router();
 
+router.post('/', formLimiter, validate({ body: reservationValidation.reservationSchema }), reservationController.create);
+router.get('/', protect, validate({ query: reservationValidation.listQuerySchema }), reservationController.list);
+router.patch('/:id/status', protect, validate({ params: reservationValidation.idParamSchema, body: reservationValidation.statusUpdateSchema }), reservationController.updateStatus);
+router.delete('/:id', protect, validate({ params: reservationValidation.idParamSchema }), reservationController.remove);
+
+module.exports = router;
+
 /**
  * @swagger
  * tags:
- *   - name: Reservations
- *     description: Table booking requests — public submission, admin management
+ *   name: Reservations
+ *   description: Table booking requests
  */
 
 /**
  * @swagger
  * /reservations:
  *   post:
- *     summary: Submit a table booking request (public)
- *     description: >
- *       Rate-limited to 20 requests per 15 minutes per IP.
- *       The booking starts with status `pending`; admin confirms by phone.
+ *     summary: Submit a table request (public)
  *     tags: [Reservations]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/ReservationInput'
+ *             type: object
+ *             required:
+ *               - firstName
+ *               - lastName
+ *               - customerMobileNumber
+ *               - tableSize
+ *               - date
+ *               - time
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: Rahul
+ *               lastName:
+ *                 type: string
+ *                 example: Kumar
+ *               customerMobileNumber:
+ *                 type: string
+ *                 example: "9876543210"
+ *               email:
+ *                 type: string
+ *                 example: rahul@example.com
+ *               tableSize:
+ *                 type: integer
+ *                 example: 4
+ *               date:
+ *                 type: string
+ *                 example: "2026-08-30"
+ *               time:
+ *                 type: string
+ *                 example: "19:30"
+ *               occasion:
+ *                 type: string
+ *               notes:
+ *                 type: string
  *     responses:
- *       201:
+ *       "201":
  *         description: Reservation request received
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Reservation request received — we'll confirm by phone shortly.
- *                 data:
- *                   $ref: '#/components/schemas/Reservation'
- *       400:
- *         $ref: '#/components/responses/ValidationError'
- *       429:
- *         $ref: '#/components/responses/TooManyRequests'
- *
+ *       "400":
+ *         $ref: '#/components/responses/BadRequest'
  *   get:
- *     summary: List all reservations — paginated and filterable (admin)
+ *     summary: List reservations (admin)
  *     tags: [Reservations]
  *     security:
  *       - bearerAuth: []
@@ -61,59 +82,34 @@ const router = express.Router();
  *         schema:
  *           type: string
  *           enum: [all, pending, confirmed, cancelled]
- *         description: Filter by status (omit or pass `all` for no filter)
  *       - in: query
  *         name: search
  *         schema:
  *           type: string
- *         description: Full-text search on name, phone, or email
  *       - in: query
  *         name: page
  *         schema:
  *           type: integer
- *           minimum: 1
- *           default: 1
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
- *           minimum: 1
- *           maximum: 100
- *           default: 10
  *       - in: query
  *         name: sort
  *         schema:
  *           type: string
- *           enum: [-createdAt, createdAt, date, -date]
- *           default: -createdAt
  *     responses:
- *       200:
- *         description: Paginated list of reservations
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/PaginatedReservations'
- *       401:
+ *       "200":
+ *         description: Paginated reservations
+ *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  */
-router.post(
-  '/',
-  formLimiter,
-  validate({ body: reservationValidation.reservationSchema }),
-  reservationController.create
-);
-router.get(
-  '/',
-  protect,
-  validate({ query: reservationValidation.listQuerySchema }),
-  reservationController.list
-);
 
 /**
  * @swagger
  * /reservations/{id}/status:
  *   patch:
- *     summary: Update a reservation's status (admin)
+ *     summary: Update a reservation status (admin)
  *     tags: [Reservations]
  *     security:
  *       - bearerAuth: []
@@ -123,50 +119,26 @@ router.get(
  *         required: true
  *         schema:
  *           type: string
- *           example: 64f1a2b3c4d5e6f7a8b9c0d1
- *         description: Reservation MongoDB ObjectId
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required: [status]
+ *             required:
+ *               - status
  *             properties:
  *               status:
  *                 type: string
  *                 enum: [pending, confirmed, cancelled]
- *                 example: confirmed
  *     responses:
- *       200:
- *         description: Status updated
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/Reservation'
- *       400:
- *         $ref: '#/components/responses/ValidationError'
- *       401:
+ *       "200":
+ *         description: Updated
+ *       "401":
  *         $ref: '#/components/responses/Unauthorized'
- *       404:
+ *       "404":
  *         $ref: '#/components/responses/NotFound'
  */
-router.patch(
-  '/:id/status',
-  protect,
-  validate({
-    params: reservationValidation.idParamSchema,
-    body: reservationValidation.statusUpdateSchema,
-  }),
-  reservationController.updateStatus
-);
 
 /**
  * @swagger
@@ -182,24 +154,11 @@ router.patch(
  *         required: true
  *         schema:
  *           type: string
- *           example: 64f1a2b3c4d5e6f7a8b9c0d1
  *     responses:
- *       200:
- *         description: Reservation deleted
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessMessage'
- *       401:
+ *       "200":
+ *         description: Deleted
+ *       "401":
  *         $ref: '#/components/responses/Unauthorized'
- *       404:
+ *       "404":
  *         $ref: '#/components/responses/NotFound'
  */
-router.delete(
-  '/:id',
-  protect,
-  validate({ params: reservationValidation.idParamSchema }),
-  reservationController.remove
-);
-
-module.exports = router;

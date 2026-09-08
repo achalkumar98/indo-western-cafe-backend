@@ -1,4 +1,3 @@
-const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const { Banner } = require('../models');
 
@@ -11,7 +10,7 @@ const create = (payload) => Banner.create(payload);
 const update = async (id, payload) => {
   const banner = await Banner.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
   if (!banner) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Banner not found');
+    throw new ApiError(404, 'Banner not found');
   }
   return banner;
 };
@@ -19,7 +18,7 @@ const update = async (id, payload) => {
 const remove = async (id) => {
   const banner = await Banner.findByIdAndDelete(id);
   if (!banner) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Banner not found');
+    throw new ApiError(404, 'Banner not found');
   }
   return banner;
 };

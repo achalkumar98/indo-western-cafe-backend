@@ -4,13 +4,9 @@ const xss = require('xss-clean');
 const mongoSanitize = require('express-mongo-sanitize');
 const compression = require('compression');
 const cors = require('cors');
-const httpStatus = require('http-status');
-const swaggerUi = require('swagger-ui-express');
-
 const config = require('./config/config');
 const morgan = require('./config/morgan');
 const routes = require('./routes/v1');
-const swaggerSpec = require('./config/swagger');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 
@@ -28,15 +24,10 @@ app.use(xss());
 app.use(mongoSanitize());
 app.use(compression());
 
-// CORS — production: CLIENT_URL only; development: any localhost
 function buildCorsOrigin() {
-  const allowlist = config.clientUrl
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const allowlist = config.clientUrl.split(',').map((s) => s.trim()).filter(Boolean);
   const isDev = config.env !== 'production';
   const localhostRe = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
-
   return (origin, callback) => {
     if (!origin) return callback(null, true);
     if (allowlist.includes('*') || allowlist.includes(origin)) return callback(null, true);
@@ -48,19 +39,12 @@ function buildCorsOrigin() {
 app.use(cors({ origin: buildCorsOrigin(), credentials: true }));
 app.options('*', cors());
 
-// Health check
-app.get('/api/health', (req, res) => res.json({ success: true, status: 'ok' }));
+app.get('/v1/health', (_req, res) => res.json({ success: true, status: 'ok' }));
 
-// Swagger docs
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { customSiteTitle: 'Indo Western API' }));
-app.get('/api/docs.json', (req, res) => res.json(swaggerSpec));
+app.use('/v1', routes);
 
-// All API routes mounted under /api
-app.use('/api', routes);
-
-// 404 handler
-app.use((req, res, next) => {
-  next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));
+app.use((_req, _res, next) => {
+  next(new ApiError(404, 'Not found'));
 });
 
 app.use(errorConverter);

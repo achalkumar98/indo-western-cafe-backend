@@ -8,10 +8,12 @@ const galleryRoute = require('./gallery.route');
 const reviewsRoute = require('./reviews.route');
 const statsRoute = require('./stats.route');
 const adminUserRoute = require('./adminUser.route');
+const docsRoute = require('./docs.route');
+const config = require('../../config/config');
 
 const router = express.Router();
 
-const routes = [
+const defaultRoutes = [
   { path: '/auth', route: authRoute },
   { path: '/reservations', route: reservationRoute },
   { path: '/menu', route: menuRoute },
@@ -23,8 +25,16 @@ const routes = [
   { path: '/admin/users', route: adminUserRoute },
 ];
 
-routes.forEach((route) => {
+const devRoutes = [{ path: '/docs', route: docsRoute }];
+
+defaultRoutes.forEach((route) => {
   router.use(route.path, route.route);
 });
+
+if (config.env === 'development') {
+  devRoutes.forEach((route) => {
+    router.use(route.path, route.route);
+  });
+}
 
 module.exports = router;

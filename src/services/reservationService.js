@@ -1,4 +1,3 @@
-const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const { Reservation } = require('../models');
 
@@ -39,7 +38,7 @@ const updateStatus = async (id, status) => {
     { new: true, runValidators: true }
   );
   if (!reservation) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Reservation not found');
+    throw new ApiError(404, 'Reservation not found');
   }
   return reservation;
 };
@@ -47,7 +46,7 @@ const updateStatus = async (id, status) => {
 const remove = async (id) => {
   const reservation = await Reservation.findByIdAndDelete(id);
   if (!reservation) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Reservation not found');
+    throw new ApiError(404, 'Reservation not found');
   }
   return reservation;
 };

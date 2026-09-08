@@ -1,29 +1,30 @@
 const express = require('express');
-const { protect } = require('../../middlewares/auth');
-const { authLimiter } = require('../../middlewares/rateLimiter');
 const validate = require('../../middlewares/validate');
+const { authLimiter } = require('../../middlewares/rateLimiter');
+const { protect } = require('../../middlewares/auth');
 const { authValidation } = require('../../validations');
 const { authController } = require('../../controllers');
 
 const router = express.Router();
 
+router.post('/register', authLimiter, validate({ body: authValidation.registerSchema }), authController.register);
+router.post('/login', authLimiter, validate({ body: authValidation.loginSchema }), authController.login);
+router.get('/me', protect, authController.me);
+
+module.exports = router;
+
 /**
  * @swagger
  * tags:
- *   - name: Auth
- *     description: Admin authentication — register, login, token introspection
+ *   name: Auth
+ *   description: Admin authentication
  */
 
 /**
  * @swagger
  * /auth/register:
  *   post:
- *     summary: Register a new admin account
- *     description: >
- *       Creates a new admin user. Requires a shared `signupCode` that is set
- *       in the server `.env` file (`ADMIN_SIGNUP_CODE`).
- *       Usernames accept plain handles (`priya`) **or** full email addresses
- *       (`priya@example.com`).
+ *     summary: Register a new admin
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -31,65 +32,38 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required: [username, password, signupCode]
+ *             required:
+ *               - username
+ *               - password
+ *               - signupCode
  *             properties:
  *               name:
  *                 type: string
  *                 example: Priya Sharma
- *                 description: Display name (optional)
  *               username:
  *                 type: string
- *                 example: achalkumar@gmail.com
- *                 description: Plain handle or full email address
+ *                 example: priya
  *               password:
  *                 type: string
- *                 format: password
  *                 minLength: 8
  *                 example: strongpass123
  *               signupCode:
  *                 type: string
- *                 example: indo-western-admin-2026
- *                 description: Shared secret from ADMIN_SIGNUP_CODE env variable
+ *                 example: indo-western-admin
  *     responses:
- *       201:
- *         description: Admin created — JWT token returned
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/AuthResponse'
- *       400:
- *         $ref: '#/components/responses/ValidationError'
- *       403:
- *         description: Invalid signup code
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       409:
- *         description: Username already taken
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       429:
- *         $ref: '#/components/responses/TooManyRequests'
+ *       "201":
+ *         description: Admin created — token returned
+ *       "400":
+ *         $ref: '#/components/responses/BadRequest'
+ *       "403":
+ *         $ref: '#/components/responses/Forbidden'
  */
-router.post(
-  '/register',
-  authLimiter,
-  validate({ body: authValidation.registerSchema }),
-  authController.register
-);
 
 /**
  * @swagger
  * /auth/login:
  *   post:
- *     summary: Admin sign-in — returns a JWT
- *     description: >
- *       Authenticates an admin against the database **or** the bootstrap
- *       `.env` credentials (`ADMIN_USERNAME` / `ADMIN_PASSWORD`) if no DB
- *       admin exists yet.
+ *     summary: Admin login — returns a JWT
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -97,52 +71,19 @@ router.post(
  *         application/json:
  *           schema:
  *             type: object
- *             required: [username, password]
+ *             required:
+ *               - username
+ *               - password
  *             properties:
  *               username:
  *                 type: string
  *                 example: admin
  *               password:
  *                 type: string
- *                 format: password
  *                 example: indowestern2026
  *     responses:
- *       200:
- *         description: Authenticated — JWT token returned
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/AuthResponse'
- *       400:
- *         $ref: '#/components/responses/ValidationError'
- *       401:
- *         description: Invalid username or password
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       429:
- *         $ref: '#/components/responses/TooManyRequests'
- */
-router.post(
-  '/login',
-  authLimiter,
-  validate({ body: authValidation.loginSchema }),
-  authController.login
-);
-
-/**
- * @swagger
- * /auth/me:
- *   get:
- *     summary: Return the admin decoded from the bearer token
- *     description: Introspects the JWT and returns the current admin's username and role.
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Current admin info
+ *       "200":
+ *         description: Authenticated — token returned
  *         content:
  *           application/json:
  *             schema:
@@ -150,12 +91,30 @@ router.post(
  *               properties:
  *                 success:
  *                   type: boolean
- *                   example: true
+ *                 token:
+ *                   type: string
  *                 user:
- *                   $ref: '#/components/schemas/AdminUser'
- *       401:
+ *                   type: object
+ *                   properties:
+ *                     username:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  */
-router.get('/me', protect, authController.me);
 
-module.exports = router;
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Return the current admin from bearer token
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       "200":
+ *         description: Current admin info
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
+ */

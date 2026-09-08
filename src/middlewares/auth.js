@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const httpStatus = require('http-status');
 const config = require('../config/config');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
@@ -9,7 +8,7 @@ const protect = catchAsync(async (req, res, next) => {
   const token = header.startsWith('Bearer ') ? header.slice(7) : null;
 
   if (!token) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Not authorized — admin sign-in required');
+    throw new ApiError(401, 'Not authorized — admin sign-in required');
   }
 
   try {
@@ -17,7 +16,7 @@ const protect = catchAsync(async (req, res, next) => {
     req.admin = { username: decoded.username, role: decoded.role };
     next();
   } catch {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Session expired or invalid — please sign in again');
+    throw new ApiError(401, 'Session expired or invalid — please sign in again');
   }
 });
 

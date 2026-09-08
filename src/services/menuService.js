@@ -1,4 +1,3 @@
-const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const { MenuItem } = require('../models');
 
@@ -27,7 +26,7 @@ const create = (payload) => MenuItem.create(payload);
 const update = async (id, payload) => {
   const item = await MenuItem.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
   if (!item) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Menu item not found');
+    throw new ApiError(404, 'Menu item not found');
   }
   return item;
 };
@@ -35,7 +34,7 @@ const update = async (id, payload) => {
 const remove = async (id) => {
   const item = await MenuItem.findByIdAndDelete(id);
   if (!item) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Menu item not found');
+    throw new ApiError(404, 'Menu item not found');
   }
   return item;
 };
