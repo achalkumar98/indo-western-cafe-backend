@@ -43,6 +43,19 @@ All paths below are relative to \`/api\`.
       { url: 'http://localhost:5000/api', description: 'Local development' },
     ],
 
+    // ─── Tags in alphabetical order (controls sidebar sort in Swagger UI) ──
+    tags: [
+      { name: 'AdminUsers',   description: 'Admin account management' },
+      { name: 'Auth',          description: 'Authentication — register and login' },
+      { name: 'Banners',       description: 'Hero banner management' },
+      { name: 'Gallery',       description: 'Photo gallery management' },
+      { name: 'Menu',          description: 'Menu items — public listing and admin CRUD' },
+      { name: 'Reservations',  description: 'Table booking — public submit and admin management' },
+      { name: 'Reviews',       description: 'Google Places reviews proxy' },
+      { name: 'Settings',      description: 'Restaurant settings — public read and admin update' },
+      { name: 'Stats',         description: 'Admin dashboard statistics and trends' },
+    ],
+
     // ─── Security schemes ───────────────────────────────────────────────────
     components: {
       securitySchemes: {
