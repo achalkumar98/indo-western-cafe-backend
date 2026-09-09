@@ -1,7 +1,19 @@
 const Joi = require("joi");
 
-// 12-slot hourly array for one day (11 AM – 10 PM)
 const hourlySlots = Joi.array().items(Joi.number().min(0).max(100)).length(12);
+
+const daySchedule = Joi.object({
+  day: Joi.string().valid("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun").required(),
+  opensAt: Joi.string()
+    .trim()
+    .pattern(/^\d{1,2}:\d{2}\s?(AM|PM)$/i)
+    .messages({ "string.pattern.base": "opensAt must be like 11:00 AM" }),
+  closesAt: Joi.string()
+    .trim()
+    .pattern(/^\d{1,2}:\d{2}\s?(AM|PM)$/i)
+    .messages({ "string.pattern.base": "closesAt must be like 10:00 PM" }),
+  weekOff: Joi.boolean(),
+});
 
 const settingsUpdateSchema = Joi.object({
   phone: Joi.string()
@@ -32,6 +44,7 @@ const settingsUpdateSchema = Joi.object({
     Sat: hourlySlots,
     Sun: hourlySlots,
   }),
+  weekSchedule: Joi.array().items(daySchedule).max(7),
 }).min(1);
 
 const idParamSchema = Joi.object({

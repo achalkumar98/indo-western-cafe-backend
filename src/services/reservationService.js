@@ -1,13 +1,22 @@
 const ApiError = require('../utils/ApiError');
 const { Reservation } = require('../models');
 
-const create = (payload) => Reservation.create(payload);
+const generateBookingId = () => {
+  const date = new Date();
+  const datePart = date.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
+  const rand = Math.random().toString(36).toUpperCase().slice(2, 6);   // 4 random alphanumeric chars
+  return `IWC-${datePart}-${rand}`;
+};
 
+const create = async (payload) => {
+  const bookingId = generateBookingId();
+  return Reservation.create({ ...payload, bookingId });
+};
+
+// ... rest unchanged
 const list = async ({ status, search, page = 1, limit = 20, sort = '-createdAt' } = {}) => {
   const query = {};
-  if (status && status !== 'all') {
-    query.status = status;
-  }
+  if (status && status !== 'all') query.status = status;
   if (search) {
     query.$or = [
       { firstName: { $regex: search, $options: 'i' } },
@@ -21,10 +30,7 @@ const list = async ({ status, search, page = 1, limit = 20, sort = '-createdAt' 
   const perPage = Math.min(100, Math.max(1, Number(limit) || 20));
 
   const [data, total] = await Promise.all([
-    Reservation.find(query)
-      .sort(sort)
-      .skip((pageNum - 1) * perPage)
-      .limit(perPage),
+    Reservation.find(query).sort(sort).skip((pageNum - 1) * perPage).limit(perPage),
     Reservation.countDocuments(query),
   ]);
 
@@ -32,22 +38,14 @@ const list = async ({ status, search, page = 1, limit = 20, sort = '-createdAt' 
 };
 
 const updateStatus = async (id, status) => {
-  const reservation = await Reservation.findByIdAndUpdate(
-    id,
-    { status },
-    { new: true, runValidators: true }
-  );
-  if (!reservation) {
-    throw new ApiError(404, 'Reservation not found');
-  }
+  const reservation = await Reservation.findByIdAndUpdate(id, { status }, { new: true, runValidators: true });
+  if (!reservation) throw new ApiError(404, 'Reservation not found');
   return reservation;
 };
 
 const remove = async (id) => {
   const reservation = await Reservation.findByIdAndDelete(id);
-  if (!reservation) {
-    throw new ApiError(404, 'Reservation not found');
-  }
+  if (!reservation) throw new ApiError(404, 'Reservation not found');
   return reservation;
 };
 
